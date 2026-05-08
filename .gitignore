@@ -1,0 +1,22 @@
+# .NET
+**/bin/
+**/obj/
+*.user
+*.suo
+.vs/
+
+# EF Core migrations are committed – no need to ignore them
+
+# Frontend
+cacheflow-client/node_modules/
+cacheflow-client/dist/
+cacheflow-client/.vite/
+
+# Env/secrets
+appsettings.Production.json
+*.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db

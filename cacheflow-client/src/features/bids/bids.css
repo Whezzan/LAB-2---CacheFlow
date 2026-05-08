@@ -1,0 +1,142 @@
+/* --- Place Bid --- */
+
+.place-bid {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 2rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.place-bid__title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 0.35rem;
+}
+
+.place-bid__minimum {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 1rem;
+}
+
+.place-bid__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.place-bid__input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.place-bid__input-group {
+  flex: 1;
+}
+
+.place-bid__submit {
+  padding: 0.65rem 1.5rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* --- Bid List --- */
+
+.bid-list {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 2rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.bid-list__title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 1rem;
+}
+
+.bid-list__empty {
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.bid-list__table-wrapper {
+  overflow-x: auto;
+}
+
+.bid-list__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.bid-list__table thead th {
+  text-align: left;
+  padding: 0.6rem 1rem;
+  background-color: var(--color-bg);
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.bid-list__table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.bid-list__row--top td {
+  background-color: #f0fdf4;
+  font-weight: 600;
+}
+
+.bid-list__bidder {
+  color: var(--color-text);
+}
+
+.bid-list__you-badge {
+  font-size: 0.75rem;
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.bid-list__amount {
+  font-weight: 700;
+  color: var(--color-price);
+}
+
+.bid-list__date {
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+}
+
+.bid-list__undo-btn {
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 480px) {
+  .place-bid__input-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .place-bid__submit {
+    width: 100%;
+  }
+
+  .place-bid,
+  .bid-list {
+    padding: 1.25rem;
+  }
+}
