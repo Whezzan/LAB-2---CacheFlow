@@ -1,8 +1,13 @@
 import { Link } from 'react-router-dom'
 import { formatTimeLeft, formatCurrency } from './auctionUtils'
+import type { AuctionDto } from '../../types'
 import './auctions.css'
 
-export default function AuctionCard({ auction }) {
+interface AuctionCardProps {
+  auction: AuctionDto
+}
+
+export default function AuctionCard({ auction }: AuctionCardProps) {
   const currentPrice = auction.currentHighestBid > 0
     ? auction.currentHighestBid
     : auction.startingPrice
@@ -35,7 +40,7 @@ export default function AuctionCard({ auction }) {
   )
 }
 
-function getCategoryIcon(title) {
+function getCategoryIcon(title: string): string {
   const lower = title.toLowerCase()
   if (lower.includes('skärm') || lower.includes('monitor') || lower.includes('display')) return '🖥️'
   if (lower.includes('laptop') || lower.includes('dator'))                                return '💻'

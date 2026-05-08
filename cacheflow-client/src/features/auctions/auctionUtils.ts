@@ -1,4 +1,4 @@
-export function formatCurrency(amount) {
+export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('sv-SE', {
     style:    'currency',
     currency: 'SEK',
@@ -6,7 +6,7 @@ export function formatCurrency(amount) {
   }).format(amount)
 }
 
-export function formatDate(dateString) {
+export function formatDate(dateString: string): string {
   return new Intl.DateTimeFormat('sv-SE', {
     year:   'numeric',
     month:  'short',
@@ -16,10 +16,10 @@ export function formatDate(dateString) {
   }).format(new Date(dateString))
 }
 
-export function formatTimeLeft(endDateString) {
+export function formatTimeLeft(endDateString: string): string {
   const now     = new Date()
   const endDate = new Date(endDateString)
-  const diff    = endDate - now
+  const diff    = endDate.getTime() - now.getTime()
 
   if (diff <= 0) return 'Avslutad'
 
@@ -32,8 +32,8 @@ export function formatTimeLeft(endDateString) {
   return `${minutes}m kvar`
 }
 
-export function toLocalDatetimeValue(dateString) {
-  const date = new Date(dateString)
+export function toLocalDatetimeValue(dateString: string): string {
+  const date   = new Date(dateString)
   const offset = date.getTimezoneOffset()
   const local  = new Date(date.getTime() - offset * 60000)
   return local.toISOString().slice(0, 16)

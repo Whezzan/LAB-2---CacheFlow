@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { searchAuctions } from './auctionService'
 import AuctionCard from './AuctionCard'
+import type { AuctionDto } from '../../types'
 import './auctions.css'
 
 export default function AuctionListPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [auctions, setAuctions]         = useState([])
+  const [auctions, setAuctions]         = useState<AuctionDto[]>([])
   const [loading, setLoading]           = useState(true)
   const [query, setQuery]               = useState(searchParams.get('search') ?? '')
   const [includeClosed, setIncludeClosed] = useState(false)
@@ -25,13 +26,13 @@ export default function AuctionListPage() {
     }
   }
 
-  const handleSearch = (e) => {
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setSearchParams(query ? { search: query } : {})
     loadAuctions()
   }
 
-  const handleFilterChange = (closed) => {
+  const handleFilterChange = (closed: boolean) => {
     setIncludeClosed(closed)
   }
 

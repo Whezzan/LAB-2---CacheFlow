@@ -1,7 +1,14 @@
 import { formatCurrency, formatDate } from '../auctions/auctionUtils'
+import type { BidDto } from '../../types'
 import './bids.css'
 
-export default function BidList({ bids, currentUserId, onUndoBid }) {
+interface BidListProps {
+  bids: BidDto[]
+  currentUserId: number | undefined
+  onUndoBid: (bidId: number) => void
+}
+
+export default function BidList({ bids, currentUserId, onUndoBid }: BidListProps) {
   if (bids.length === 0) {
     return (
       <div className="bid-list">

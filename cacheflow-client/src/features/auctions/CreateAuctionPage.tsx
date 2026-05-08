@@ -1,53 +1,39 @@
-import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
-import { getAuctionById, updateAuction } from './auctionService'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { createAuction } from './auctionService'
 import { toLocalDatetimeValue } from './auctionUtils'
 import './auctions.css'
 
-export default function EditAuctionPage() {
-  const { id }    = useParams()
-  const { user }  = useAuth()
-  const navigate  = useNavigate()
+interface AuctionForm {
+  title: string
+  description: string
+  startingPrice: string
+  startDate: string
+  endDate: string
+}
 
-  const [form, setForm]     = useState(null)
-  const [hasBids, setHasBids] = useState(false)
-  const [error, setError]   = useState('')
+export default function CreateAuctionPage() {
+  const navigate = useNavigate()
+
+  const now      = new Date()
+  const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000)
+  const nextWeek = new Date(now.getTime() + 7  * 24 * 60 * 60 * 1000)
+
+  const [form, setForm] = useState<AuctionForm>({
+    title:         '',
+    description:   '',
+    startingPrice: '',
+    startDate:     toLocalDatetimeValue(tomorrow.toISOString()),
+    endDate:       toLocalDatetimeValue(nextWeek.toISOString()),
+  })
+  const [error, setError]     = useState('')
   const [loading, setLoading] = useState(false)
-  const [fetching, setFetching] = useState(true)
 
-  useEffect(() => {
-    const loadAuction = async () => {
-      try {
-        const auction = await getAuctionById(id)
-
-        if (auction.userId !== user?.userId && !user?.isAdmin) {
-          navigate(`/auctions/${id}`)
-          return
-        }
-
-        setHasBids(auction.bidCount > 0)
-        setForm({
-          title:         auction.title,
-          description:   auction.description,
-          startingPrice: auction.startingPrice.toString(),
-          startDate:     toLocalDatetimeValue(auction.startDate),
-          endDate:       toLocalDatetimeValue(auction.endDate),
-        })
-      } catch {
-        setError('Auktionen kunde inte laddas.')
-      } finally {
-        setFetching(false)
-      }
-    }
-    loadAuction()
-  }, [id])
-
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
 
@@ -58,29 +44,27 @@ export default function EditAuctionPage() {
 
     setLoading(true)
     try {
-      await updateAuction(id, {
+      const auction = await createAuction({
         title:         form.title,
         description:   form.description,
-        startingPrice: hasBids ? undefined : parseFloat(form.startingPrice),
+        startingPrice: parseFloat(form.startingPrice),
         startDate:     new Date(form.startDate).toISOString(),
         endDate:       new Date(form.endDate).toISOString(),
       })
-      navigate(`/auctions/${id}`)
-    } catch (err) {
-      setError(err.response?.data?.message ?? 'Något gick fel. Försök igen.')
+      navigate(`/auctions/${auction.id}`)
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+      setError(msg ?? 'Något gick fel. Försök igen.')
     } finally {
       setLoading(false)
     }
   }
 
-  if (fetching) return <div className="loading">Laddar...</div>
-  if (!form)    return <div className="container page-wrapper"><p className="error-message">{error}</p></div>
-
   return (
     <div className="auction-form-page page-wrapper">
       <div className="container">
         <div className="auction-form-card">
-          <h1 className="auction-form-card__title">Redigera auktion</h1>
+          <h1 className="auction-form-card__title">Skapa ny auktion</h1>
 
           <form className="auction-form" onSubmit={handleSubmit} noValidate>
             {error && <p className="error-message">{error}</p>}
@@ -93,6 +77,7 @@ export default function EditAuctionPage() {
                 type="text"
                 value={form.title}
                 onChange={handleChange}
+                placeholder="t.ex. Dell UltraSharp 27 tum skärm"
                 minLength={3}
                 maxLength={200}
                 required
@@ -106,25 +91,23 @@ export default function EditAuctionPage() {
                 name="description"
                 value={form.description}
                 onChange={handleChange}
+                placeholder="Beskriv produkten, skick, specifikationer..."
                 required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="startingPrice">
-                Utropspris (SEK)
-                {hasBids && <span className="auction-form__hint"> – kan inte ändras (det finns bud)</span>}
-              </label>
+              <label htmlFor="startingPrice">Utropspris (SEK)</label>
               <input
                 id="startingPrice"
                 name="startingPrice"
                 type="number"
                 value={form.startingPrice}
                 onChange={handleChange}
+                placeholder="0"
                 min="1"
                 step="1"
-                disabled={hasBids}
-                required={!hasBids}
+                required
               />
             </div>
 
@@ -140,6 +123,7 @@ export default function EditAuctionPage() {
                   required
                 />
               </div>
+
               <div className="form-group">
                 <label htmlFor="endDate">Slutdatum</label>
                 <input
@@ -158,7 +142,7 @@ export default function EditAuctionPage() {
                 Avbryt
               </button>
               <button type="submit" className="btn btn-primary" disabled={loading}>
-                {loading ? 'Sparar...' : 'Spara ändringar'}
+                {loading ? 'Skapar...' : 'Skapa auktion'}
               </button>
             </div>
           </form>

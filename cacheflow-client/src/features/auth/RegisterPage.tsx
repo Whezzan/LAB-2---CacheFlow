@@ -14,7 +14,7 @@ export default function RegisterPage() {
   const { login } = useAuth()
   const navigate  = useNavigate()
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
 
@@ -28,8 +28,9 @@ export default function RegisterPage() {
       const data = await registerRequest(username, email, password)
       login(data)
       navigate('/')
-    } catch (err) {
-      setError(err.response?.data?.message ?? 'Registreringen misslyckades. Försök igen.')
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+      setError(msg ?? 'Registreringen misslyckades. Försök igen.')
     } finally {
       setLoading(false)
     }

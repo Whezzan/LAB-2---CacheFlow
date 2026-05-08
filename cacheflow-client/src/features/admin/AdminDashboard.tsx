@@ -2,15 +2,16 @@ import { useState, useEffect } from 'react'
 import { getAllUsers, activateUser, deactivateUser } from './adminService'
 import { searchAuctions, activateAuction, deactivateAuction } from '../auctions/auctionService'
 import { formatDate, formatCurrency } from '../auctions/auctionUtils'
+import type { AuctionDto, UserDto } from '../../types'
 import './admin.css'
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab]     = useState('auctions')
-  const [auctions, setAuctions]       = useState([])
-  const [users, setUsers]             = useState([])
+  const [activeTab, setActiveTab]           = useState<'auctions' | 'users'>('auctions')
+  const [auctions, setAuctions]             = useState<AuctionDto[]>([])
+  const [users, setUsers]                   = useState<UserDto[]>([])
   const [loadingAuctions, setLoadingAuctions] = useState(false)
   const [loadingUsers, setLoadingUsers]       = useState(false)
-  const [feedback, setFeedback]       = useState('')
+  const [feedback, setFeedback]             = useState('')
 
   useEffect(() => {
     if (activeTab === 'auctions') loadAllAuctions()
@@ -40,12 +41,12 @@ export default function AdminDashboard() {
     }
   }
 
-  const showFeedback = (msg) => {
+  const showFeedback = (msg: string) => {
     setFeedback(msg)
     setTimeout(() => setFeedback(''), 3000)
   }
 
-  const handleToggleAuction = async (auction) => {
+  const handleToggleAuction = async (auction: AuctionDto) => {
     try {
       if (auction.isActive) {
         await deactivateAuction(auction.id)
@@ -60,7 +61,7 @@ export default function AdminDashboard() {
     }
   }
 
-  const handleToggleUser = async (user) => {
+  const handleToggleUser = async (user: UserDto) => {
     try {
       if (user.isActive) {
         await deactivateUser(user.id)

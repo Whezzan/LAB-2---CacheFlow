@@ -13,7 +13,7 @@ export default function ProfilePage() {
   const [success, setSuccess]                 = useState('')
   const [loading, setLoading]                 = useState(false)
 
-  const handlePasswordChange = async (e) => {
+  const handlePasswordChange = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
     setSuccess('')
@@ -29,20 +29,20 @@ export default function ProfilePage() {
 
     setLoading(true)
     try {
-      await apiClient.put('/users/me/password', {
-        currentPassword,
-        newPassword
-      })
+      await apiClient.put('/users/me/password', { currentPassword, newPassword })
       setSuccess('Lösenordet har uppdaterats.')
       setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
-    } catch (err) {
-      setError(err.response?.data?.message ?? 'Något gick fel. Försök igen.')
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+      setError(msg ?? 'Något gick fel. Försök igen.')
     } finally {
       setLoading(false)
     }
   }
+
+  if (!user) return null
 
   return (
     <div className="profile-page page-wrapper">

@@ -1,32 +1,63 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { createAuction } from './auctionService'
+import { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
+import { getAuctionById, updateAuction } from './auctionService'
 import { toLocalDatetimeValue } from './auctionUtils'
 import './auctions.css'
 
-export default function CreateAuctionPage() {
-  const navigate = useNavigate()
+interface AuctionForm {
+  title: string
+  description: string
+  startingPrice: string
+  startDate: string
+  endDate: string
+}
 
-  const now        = new Date()
-  const tomorrow   = new Date(now.getTime() + 24 * 60 * 60 * 1000)
-  const nextWeek   = new Date(now.getTime() + 7  * 24 * 60 * 60 * 1000)
+export default function EditAuctionPage() {
+  const { id }    = useParams<{ id: string }>()
+  const { user }  = useAuth()
+  const navigate  = useNavigate()
 
-  const [form, setForm] = useState({
-    title:        '',
-    description:  '',
-    startingPrice: '',
-    startDate:    toLocalDatetimeValue(tomorrow),
-    endDate:      toLocalDatetimeValue(nextWeek),
-  })
-  const [error, setError]   = useState('')
+  const [form, setForm]       = useState<AuctionForm | null>(null)
+  const [hasBids, setHasBids] = useState(false)
+  const [error, setError]     = useState('')
   const [loading, setLoading] = useState(false)
+  const [fetching, setFetching] = useState(true)
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
+  useEffect(() => {
+    const loadAuction = async () => {
+      try {
+        const auction = await getAuctionById(id!)
+
+        if (auction.userId !== user?.userId && !user?.isAdmin) {
+          navigate(`/auctions/${id}`)
+          return
+        }
+
+        setHasBids(auction.bidCount > 0)
+        setForm({
+          title:         auction.title,
+          description:   auction.description,
+          startingPrice: auction.startingPrice.toString(),
+          startDate:     toLocalDatetimeValue(auction.startDate),
+          endDate:       toLocalDatetimeValue(auction.endDate),
+        })
+      } catch {
+        setError('Auktionen kunde inte laddas.')
+      } finally {
+        setFetching(false)
+      }
+    }
+    loadAuction()
+  }, [id])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm((prev) => prev ? { ...prev, [e.target.name]: e.target.value } : prev)
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (!form) return
     setError('')
 
     if (new Date(form.endDate) <= new Date(form.startDate)) {
@@ -36,26 +67,30 @@ export default function CreateAuctionPage() {
 
     setLoading(true)
     try {
-      const auction = await createAuction({
-        title:        form.title,
-        description:  form.description,
-        startingPrice: parseFloat(form.startingPrice),
-        startDate:    new Date(form.startDate).toISOString(),
-        endDate:      new Date(form.endDate).toISOString(),
+      await updateAuction(id!, {
+        title:         form.title,
+        description:   form.description,
+        startingPrice: hasBids ? undefined : parseFloat(form.startingPrice),
+        startDate:     new Date(form.startDate).toISOString(),
+        endDate:       new Date(form.endDate).toISOString(),
       })
-      navigate(`/auctions/${auction.id}`)
-    } catch (err) {
-      setError(err.response?.data?.message ?? 'Något gick fel. Försök igen.')
+      navigate(`/auctions/${id}`)
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+      setError(msg ?? 'Något gick fel. Försök igen.')
     } finally {
       setLoading(false)
     }
   }
 
+  if (fetching) return <div className="loading">Laddar...</div>
+  if (!form)    return <div className="container page-wrapper"><p className="error-message">{error}</p></div>
+
   return (
     <div className="auction-form-page page-wrapper">
       <div className="container">
         <div className="auction-form-card">
-          <h1 className="auction-form-card__title">Skapa ny auktion</h1>
+          <h1 className="auction-form-card__title">Redigera auktion</h1>
 
           <form className="auction-form" onSubmit={handleSubmit} noValidate>
             {error && <p className="error-message">{error}</p>}
@@ -68,7 +103,6 @@ export default function CreateAuctionPage() {
                 type="text"
                 value={form.title}
                 onChange={handleChange}
-                placeholder="t.ex. Dell UltraSharp 27 tum skärm"
                 minLength={3}
                 maxLength={200}
                 required
@@ -82,23 +116,25 @@ export default function CreateAuctionPage() {
                 name="description"
                 value={form.description}
                 onChange={handleChange}
-                placeholder="Beskriv produkten, skick, specifikationer..."
                 required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="startingPrice">Utropspris (SEK)</label>
+              <label htmlFor="startingPrice">
+                Utropspris (SEK)
+                {hasBids && <span className="auction-form__hint"> – kan inte ändras (det finns bud)</span>}
+              </label>
               <input
                 id="startingPrice"
                 name="startingPrice"
                 type="number"
                 value={form.startingPrice}
                 onChange={handleChange}
-                placeholder="0"
                 min="1"
                 step="1"
-                required
+                disabled={hasBids}
+                required={!hasBids}
               />
             </div>
 
@@ -114,7 +150,6 @@ export default function CreateAuctionPage() {
                   required
                 />
               </div>
-
               <div className="form-group">
                 <label htmlFor="endDate">Slutdatum</label>
                 <input
@@ -133,7 +168,7 @@ export default function CreateAuctionPage() {
                 Avbryt
               </button>
               <button type="submit" className="btn btn-primary" disabled={loading}>
-                {loading ? 'Skapar...' : 'Skapa auktion'}
+                {loading ? 'Sparar...' : 'Spara ändringar'}
               </button>
             </div>
           </form>

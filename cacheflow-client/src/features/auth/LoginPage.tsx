@@ -5,15 +5,15 @@ import { login as loginRequest } from './authService'
 import './auth.css'
 
 export default function LoginPage() {
-  const [email, setEmail]     = useState('')
+  const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError]     = useState('')
-  const [loading, setLoading] = useState(false)
+  const [error, setError]       = useState('')
+  const [loading, setLoading]   = useState(false)
 
   const { login } = useAuth()
   const navigate  = useNavigate()
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
     setLoading(true)
@@ -22,8 +22,9 @@ export default function LoginPage() {
       const data = await loginRequest(email, password)
       login(data)
       navigate('/')
-    } catch (err) {
-      setError(err.response?.data?.message ?? 'Något gick fel. Försök igen.')
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+      setError(msg ?? 'Något gick fel. Försök igen.')
     } finally {
       setLoading(false)
     }

@@ -7,7 +7,7 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use((config) => {
   const stored = localStorage.getItem('cacheflow_user')
   if (stored) {
-    const { token } = JSON.parse(stored)
+    const { token } = JSON.parse(stored) as { token: string }
     config.headers.Authorization = `Bearer ${token}`
   }
   return config

@@ -2,16 +2,17 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AuctionCard from '../auctions/AuctionCard'
 import { searchAuctions } from '../auctions/auctionService'
+import type { AuctionDto } from '../../types'
 import './home.css'
 
 export default function HomePage() {
-  const [searchQuery, setSearchQuery]   = useState('')
-  const [auctions, setAuctions]         = useState([])
-  const [hasSearched, setHasSearched]   = useState(false)
-  const [loading, setLoading]           = useState(false)
-  const navigate                         = useNavigate()
+  const [searchQuery, setSearchQuery] = useState('')
+  const [auctions, setAuctions]       = useState<AuctionDto[]>([])
+  const [hasSearched, setHasSearched] = useState(false)
+  const [loading, setLoading]         = useState(false)
+  const navigate                       = useNavigate()
 
-  const handleSearch = async (e) => {
+  const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!searchQuery.trim()) {
       navigate('/auctions')
@@ -108,7 +109,7 @@ export default function HomePage() {
   )
 }
 
-const CATEGORIES = [
+const CATEGORIES: { icon: string; label: string }[] = [
   { icon: '🖥️', label: 'Skärmar' },
   { icon: '💻', label: 'Laptops' },
   { icon: '⌨️', label: 'Keyboards' },

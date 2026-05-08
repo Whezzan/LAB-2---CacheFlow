@@ -6,14 +6,15 @@ import { getBidsByAuction, undoBid } from '../bids/bidService'
 import BidList from '../bids/BidList'
 import PlaceBid from '../bids/PlaceBid'
 import { formatCurrency, formatDate, formatTimeLeft } from './auctionUtils'
+import type { AuctionDto, BidDto } from '../../types'
 import './auctions.css'
 
 export default function AuctionDetailPage() {
-  const { id }          = useParams()
+  const { id }          = useParams<{ id: string }>()
   const { user }        = useAuth()
   const navigate        = useNavigate()
-  const [auction, setAuction] = useState(null)
-  const [bids, setBids]       = useState([])
+  const [auction, setAuction] = useState<AuctionDto | null>(null)
+  const [bids, setBids]       = useState<BidDto[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState('')
 
@@ -25,8 +26,8 @@ export default function AuctionDetailPage() {
     setLoading(true)
     try {
       const [auctionData, bidsData] = await Promise.all([
-        getAuctionById(id),
-        getBidsByAuction(id)
+        getAuctionById(id!),
+        getBidsByAuction(id!)
       ])
       setAuction(auctionData)
       setBids(bidsData)
@@ -39,19 +40,20 @@ export default function AuctionDetailPage() {
 
   const handleBidPlaced = async () => {
     const [auctionData, bidsData] = await Promise.all([
-      getAuctionById(id),
-      getBidsByAuction(id)
+      getAuctionById(id!),
+      getBidsByAuction(id!)
     ])
     setAuction(auctionData)
     setBids(bidsData)
   }
 
-  const handleUndoBid = async (bidId) => {
+  const handleUndoBid = async (bidId: number) => {
     try {
-      await undoBid(id, bidId)
+      await undoBid(id!, bidId)
       await handleBidPlaced()
-    } catch (err) {
-      alert(err.response?.data?.message ?? 'Kunde inte ångra budet.')
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+      alert(msg ?? 'Kunde inte ångra budet.')
     }
   }
 
@@ -172,7 +174,7 @@ export default function AuctionDetailPage() {
   )
 }
 
-function getIcon(title) {
+function getIcon(title: string): string {
   const lower = title.toLowerCase()
   if (lower.includes('skärm') || lower.includes('monitor'))  return '🖥️'
   if (lower.includes('laptop') || lower.includes('dator'))   return '💻'

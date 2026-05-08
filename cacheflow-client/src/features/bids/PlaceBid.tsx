@@ -3,13 +3,19 @@ import { placeBid } from './bidService'
 import { formatCurrency } from '../auctions/auctionUtils'
 import './bids.css'
 
-export default function PlaceBid({ auctionId, minimumBid, onBidPlaced }) {
-  const [amount, setAmount] = useState('')
-  const [error, setError]   = useState('')
+interface PlaceBidProps {
+  auctionId: number
+  minimumBid: number
+  onBidPlaced: () => void
+}
+
+export default function PlaceBid({ auctionId, minimumBid, onBidPlaced }: PlaceBidProps) {
+  const [amount, setAmount]   = useState('')
+  const [error, setError]     = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
     setSuccess('')
@@ -26,8 +32,9 @@ export default function PlaceBid({ auctionId, minimumBid, onBidPlaced }) {
       setSuccess(`Ditt bud på ${formatCurrency(bidAmount)} är registrerat!`)
       setAmount('')
       onBidPlaced()
-    } catch (err) {
-      setError(err.response?.data?.message ?? 'Budet kunde inte läggas. Försök igen.')
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+      setError(msg ?? 'Budet kunde inte läggas. Försök igen.')
     } finally {
       setLoading(false)
     }
